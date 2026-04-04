@@ -1,12 +1,16 @@
 # Contributing to Firmware Replay Lab
 
+Thank you for your interest in contributing! Whether you're fixing a bug, adding an adapter, or sharing a real firmware failure as a replay bundle, every contribution helps make embedded debugging more reproducible.
+
 ## Setup
 
 ```bash
-git clone <repo-url>
-cd firmware-replay-lab
+git clone https://github.com/agodianel/Firmware-Replay-Lab.git
+cd Firmware-Replay-Lab
 uv sync
 ```
+
+> **Important**: Use `uv` for all dependency and environment management. Do not use `pip install` or `python -m venv`.
 
 ## Development workflow
 
@@ -51,12 +55,34 @@ The `frl anonymize` command automatically redacts common patterns (IPs, MACs, em
 
 ## Adding a platform adapter
 
-Use the `adapter-scaffold` Claude skill or follow the Antigravity prompt in `prompts/antigravity/`.
+Each adapter implements three functions:
+
+| Function | Purpose |
+|----------|---------|
+| `parse_serial_log(lines)` | Parse raw log lines into `SerialLine` entries |
+| `extract_events(lines)` | Identify structured events (panics, faults, resets) |
+| `extract_metadata_hints(lines)` | Detect target, board, or firmware version from logs |
+
+See `src/firmware_replay_lab/adapters/esp32.py` for a reference implementation, or use the `adapter-scaffold` Claude skill.
+
+### Existing adapters
+
+- **ESP32** — ESP-IDF log format, panic/watchdog/backtrace detection
+- **STM32** — HardFault, HAL errors, register dumps, assert failures
+- **JTAG** — OpenOCD/GDB session output, breakpoints, memory access
+- **SWD** — SWO/ITM trace, DWT counters, J-Link/PyOCD output
 
 ## Code standards
 
 - Python 3.10+, type hints on public APIs.
 - Use `dataclasses`, not Pydantic.
-- Keep dependencies minimal.
+- Keep dependencies minimal — core package requires zero third-party packages.
 - Tests are the source of truth for replay behavior.
 - The UI visualizes evidence; it does not define test outcomes.
+- Run `uv run ruff check src/ tests/` before submitting.
+
+## Getting help
+
+- Browse the [Wiki](https://github.com/agodianel/Firmware-Replay-Lab/wiki) for detailed guides.
+- Check existing [Issues](https://github.com/agodianel/Firmware-Replay-Lab/issues) before opening new ones.
+- Use the Community Bundle Submission issue template for sharing replay bundles.

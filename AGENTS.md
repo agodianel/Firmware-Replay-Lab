@@ -38,15 +38,35 @@ This repository is optimized for AI-assisted development.
 
 | Path | Purpose |
 |------|---------|
-| `replay_spec/` | Bundle and assertion schemas |
+| `replay_spec/` | Bundle and assertion schemas (the contract) |
 | `src/firmware_replay_lab/` | Core Python package |
-| `tests/` | Source of truth for behavior |
-| `replays/sample-bundles/` | Canonical bundle examples |
+| `src/firmware_replay_lab/adapters/` | Platform adapters (ESP32, STM32, JTAG, SWD) |
+| `tests/` | Source of truth for behavior (109 tests) |
+| `replays/sample-bundles/` | 5 canonical failure examples |
+| `replays/community/` | User-contributed anonymized bundles |
 | `ui/` | Local browser-based Dash app |
+| `.claude/skills/` | Claude Code skills (6 skills) |
+| `.github/instructions/` | Copilot instruction files |
+| `prompts/` | Antigravity and maintenance prompts |
 
 ## Tooling
 
 - Use `uv` for all Python environment, dependency, and task management.
 - Run tests with `uv run pytest`.
 - Install the project with `uv sync`.
+- Lint with `uv run ruff check src/ tests/`.
 - Never use `pip install` or `python -m venv` in contributions.
+
+## CLI reference
+
+| Command | Purpose |
+|---------|---------||
+| `frl capture` | Create a new replay bundle from logs and metadata |
+| `frl pack` | Add assertions, notes, or logs to an existing bundle |
+| `frl inspect` | Summarize a bundle for humans and agents |
+| `frl test` | Run assertions deterministically |
+| `frl export` | Export to markdown or JSON |
+| `frl validate` | Check bundle schema compliance |
+| `frl diff` | Compare two bundles |
+| `frl anonymize` | Strip PII before sharing |
+| `frl ui` | Launch Dash browser interface |

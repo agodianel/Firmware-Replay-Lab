@@ -23,10 +23,11 @@ This repository turns real firmware failures into replayable regression assets.
 |------|---------|
 | `replay_spec/` | Bundle and assertion schemas (the contract) |
 | `src/firmware_replay_lab/` | Core package: bundle, capture, replay, CLI |
-| `src/firmware_replay_lab/adapters/` | Platform integrations (ESP32, STM32) |
+| `src/firmware_replay_lab/adapters/` | Platform adapters (ESP32, STM32, JTAG, SWD) |
 | `ui/` | Local browser-based Dash app |
-| `replays/sample-bundles/` | Canonical replay examples |
-| `tests/` | Source of truth for behavior |
+| `replays/sample-bundles/` | 5 canonical failure examples |
+| `replays/community/` | User-contributed anonymized bundles |
+| `tests/` | Source of truth for behavior (109 tests) |
 
 ## Coding standards
 

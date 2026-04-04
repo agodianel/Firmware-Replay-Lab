@@ -18,7 +18,9 @@ frl = "firmware_replay_lab.cli:main"
 firmware_replay = "firmware_replay_lab.pytest_plugin"
 
 [project.optional-dependencies]
-ui = ["dash>=2.14"]
+ui = [
+    "dash>=2.14",
+]
 
 [dependency-groups]
 dev = [

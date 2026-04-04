@@ -23,10 +23,11 @@
   <a href="#quick-start">Quick Start</a> ·
   <a href="#cli-commands">CLI Commands</a> ·
   <a href="#visual-debug-ui">Visual UI</a> ·
-  <a href="#ai-workflows">AI Workflows</a> ·
+  <a href="#architecture">Architecture</a> ·
   <a href="#supported-platforms">Platforms</a> ·
-  <a href="CONTRIBUTING.md">Contributing</a> ·
-  <a href="ROADMAP.md">Roadmap</a>
+  <a href="#ai-workflows">AI Workflows</a> ·
+  <a href="https://github.com/agodianel/Firmware-Replay-Lab/wiki">Wiki</a> ·
+  <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
 ---
@@ -127,6 +128,38 @@ uv run frl export --bundle replays/wifi-timeout/bundle.json --format markdown
 uv run pytest
 ```
 
+## Architecture
+
+```text
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Capture    │────▶│ Replay Bundle│────▶│  Assertions  │
+│  (hardware)  │     │   (.json)    │     │  (pytest/CI) │
+└──────────────┘     └──────┬───────┘     └──────────────┘
+                            │
+              ┌─────────────┼─────────────┐
+              ▼             ▼             ▼
+        ┌──────────┐  ┌──────────┐  ┌──────────┐
+        │ Adapters │  │  Dash UI │  │ Reports  │
+        │ ESP32    │  │ Timeline │  │ Markdown │
+        │ STM32    │  │ Logs     │  │ JSON     │
+        │ JTAG/SWD │  │ Assert   │  │          │
+        └──────────┘  └──────────┘  └──────────┘
+```
+
+**Core modules**
+
+| Module | Purpose |
+|--------|---------|
+| `bundle.py` | Data model — `ReplayBundle`, `SessionMetadata`, `SerialLine` |
+| `capture.py` | Build bundles from logs and metadata |
+| `replay.py` | Assertion engine — 6 kinds of deterministic checks |
+| `validator.py` | Schema validation with error/warning separation |
+| `diff.py` | Side-by-side bundle comparison |
+| `timestamps.py` | Normalize timestamps across log formats |
+| `anonymize.py` | Strip PII and secrets before sharing |
+| `pytest_plugin.py` | Auto-discover bundles as pytest test items |
+| `cli.py` | 9 commands behind the `frl` entry point |
+
 ## Visual debug UI
 
 A local browser-based Dash interface for inspecting replay bundles visually — timelines, filtered logs, assertion results, and side-by-side comparisons.
@@ -137,45 +170,79 @@ uv run frl ui
 uv run frl ui --bundle-dir replays/sample-bundles --port 8050
 ```
 
+**Tabs**: Overview · Serial Log · Timeline · Assertions
+
+## Supported platforms
+
+| Platform | Adapter | What it parses |
+|----------|---------|---------------|
+| **ESP32** | `adapters/esp32.py` | ESP-IDF logs, panic handlers, watchdog resets, backtraces |
+| **STM32** | `adapters/stm32.py` | HardFault, HAL errors, register dumps, assert failures |
+| **JTAG** | `adapters/jtag.py` | OpenOCD/GDB sessions, breakpoints, memory access, flash ops |
+| **SWD** | `adapters/swd.py` | SWO/ITM trace, DWT counters, J-Link/PyOCD output |
+| **Custom** | Adapter interface | Implement `parse_serial_log`, `extract_events`, `extract_metadata_hints` |
+
 ## Bundle format
 
 Each replay bundle can be a single JSON file or a directory:
 
 ```text
 replays/wifi-timeout-esp32-2026-04-01/
-  replay.yaml
-  metadata.json
-  serial.log
-  events.jsonl
-  inputs/
-    sensor_feed.json
-    mqtt_messages.json
-  assertions.yaml
-  notes.md
+  metadata.json        # target, firmware version, board, commit
+  serial.log           # timestamped serial output
+  events.jsonl         # structured events
+  assertions.yaml      # expected outcomes
+  notes.md             # context for humans and agents
 ```
+
+## Assertion engine
+
+Six deterministic assertion kinds evaluate bundle content:
+
+| Kind | Description |
+|------|-------------|
+| `contains_text` | Serial log contains a substring |
+| `regex_match` | Serial log matches a regex pattern |
+| `event_count` | Event count meets a threshold |
+| `timing_window` | Events occur within a time range |
+| `ordering` | Events appear in expected sequence |
+| `log_line_count` | Serial log has expected number of lines |
 
 ## AI workflows
 
 This repo includes first-class AI agent support:
 
-- **Claude Code**: skills in `.claude/skills/` and root `CLAUDE.md`
-- **GitHub Copilot**: instructions in `.github/copilot-instructions.md` and `.github/instructions/`
-- **Antigravity**: task prompts in `prompts/antigravity/`
-- **Agent-neutral**: root `AGENTS.md` for any compatible tool
+- **Claude Code** — skills in `.claude/skills/` and root `CLAUDE.md`
+- **GitHub Copilot** — instructions in `.github/copilot-instructions.md` and `.github/instructions/`
+- **Antigravity** — task prompts in `prompts/antigravity/`
+- **Agent-neutral** — root `AGENTS.md` for any compatible tool
 
-## Supported platforms
+See the [Wiki](https://github.com/agodianel/Firmware-Replay-Lab/wiki) for detailed guides.
 
-- **ESP32** — ESP-IDF log parsing, panic/watchdog/backtrace detection
-- **STM32** — HardFault, HAL error, register dump, assert parsing
-- **JTAG** — OpenOCD/GDB debug session logs
-- **SWD** — SWO/ITM trace, DWT data, J-Link/PyOCD output
-- Generic adapter interface for new platforms
+## Project structure
+
+```text
+replay_spec/          # Bundle and assertion schemas (the contract)
+src/firmware_replay_lab/
+  adapters/           # Platform-specific parsers
+  ai/                 # Optional LLM summarization
+  cli.py              # frl command entry point
+  bundle.py           # Core data model
+  replay.py           # Assertion engine
+  validator.py        # Schema validation
+tests/                # Source of truth for behavior
+  unit/               # 12 test modules
+  integration/        # CLI, validation, benchmark tests
+replays/
+  sample-bundles/     # 5 canonical failure examples
+  community/          # User-contributed bundles
+ui/                   # Dash browser interface
+```
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for milestones.
+See [ROADMAP.md](ROADMAP.md) for milestones. All four phases are complete.
 
 ## License
 
 MIT
-- `notes`: human and agent context

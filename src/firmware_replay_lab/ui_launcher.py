@@ -12,10 +12,26 @@ def launch_ui(
     debug: bool = False,
 ) -> None:
     """Launch the Dash UI and open the browser."""
-    # Import here so dash is only required when actually using the UI
-    from ui.app import create_app
+    import importlib.util
+    import sys
+    from pathlib import Path
 
-    app = create_app(bundle_dir=bundle_dir)
+    # Resolve ui/app.py relative to the repo root
+    ui_app_path = Path(__file__).resolve().parents[2].parent / "ui" / "app.py"
+    if not ui_app_path.exists():
+        # Fallback: try relative to cwd
+        ui_app_path = Path("ui/app.py").resolve()
+
+    if not ui_app_path.exists():
+        raise FileNotFoundError(f"Cannot find ui/app.py (tried {ui_app_path})")
+
+    spec = importlib.util.spec_from_file_location("ui.app", ui_app_path)
+    assert spec is not None and spec.loader is not None
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["ui.app"] = mod
+    spec.loader.exec_module(mod)
+
+    app = mod.create_app(bundle_dir=bundle_dir)
 
     if not debug:
         Timer(1.5, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()

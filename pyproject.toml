@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "firmware-replay-lab"
+version = "0.1.0"
+description = "Capture firmware failures once and replay them as regression checks"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Firmware Replay Lab" }]
+dependencies = []
+
+[project.scripts]
+firmware-replay = "firmware_replay_lab.cli:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8",
+  "ruff>=0.4",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,43 @@
+{
+  "metadata": {
+    "target": "esp32",
+    "firmware_version": "v2.1.0",
+    "board": "devkitc-v4",
+    "commit": "a1b2c3d",
+    "captured_at": "2026-04-01T14:30:00+00:00",
+    "environment": {
+      "idf_version": "5.2",
+      "toolchain": "xtensa-esp32-elf-gcc 12.2"
+    }
+  },
+  "serial_log": [
+    {"timestamp_ms": 0, "direction": "device->host", "message": "rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)"},
+    {"timestamp_ms": 50, "direction": "device->host", "message": "configsip: 0, SPIWP:0xee"},
+    {"timestamp_ms": 120, "direction": "device->host", "message": "I (231) cpu_start: Starting scheduler on PRO CPU."},
+    {"timestamp_ms": 130, "direction": "device->host", "message": "I (234) cpu_start: Starting scheduler on APP CPU."},
+    {"timestamp_ms": 500, "direction": "device->host", "message": "I (512) wifi: wifi driver task: 3ffc0f80, prio:23, stack:6656"},
+    {"timestamp_ms": 600, "direction": "device->host", "message": "I (620) wifi: Init data frame dynamic rx buffer num: 32"},
+    {"timestamp_ms": 5000, "direction": "device->host", "message": "E (5012) wifi: wifi_connect: sta is not started"},
+    {"timestamp_ms": 10000, "direction": "device->host", "message": "E (10005) app_main: WiFi connection timeout after 10s"},
+    {"timestamp_ms": 10001, "direction": "device->host", "message": "abort() was called at PC 0x400d1234 on core 0"},
+    {"timestamp_ms": 10002, "direction": "device->host", "message": "Backtrace: 0x40081234:0x3ffb1230 0x400d1234:0x3ffb1250"},
+    {"timestamp_ms": 10003, "direction": "device->host", "message": "Rebooting..."}
+  ],
+  "events": [
+    {"type": "boot", "timestamp_ms": 0, "detail": "POWERON_RESET"},
+    {"type": "wifi_error", "timestamp_ms": 5000, "detail": "sta is not started"},
+    {"type": "abort", "timestamp_ms": 10001, "detail": "PC 0x400d1234 on core 0"}
+  ],
+  "mocked_inputs": [],
+  "assertions": [
+    {"kind": "contains_text", "text": "WiFi connection timeout"},
+    {"kind": "contains_text", "text": "abort() was called"},
+    {"kind": "event_count", "event_type": "wifi_error", "min_count": 1}
+  ],
+  "notes": [
+    "ESP32 DevKitC fails to connect to WiFi on cold boot when AP is not yet broadcasting.",
+    "Firmware calls wifi_connect before station mode is fully initialized.",
+    "Timeout triggers abort after 10 seconds.",
+    "Seen intermittently in production; captured in lab by delaying AP power-on."
+  ]
+}

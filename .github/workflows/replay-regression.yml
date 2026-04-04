@@ -1,0 +1,45 @@
+name: Replay Regression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "replays/**"
+      - "src/firmware_replay_lab/**"
+  pull_request:
+    paths:
+      - "replays/**"
+      - "src/firmware_replay_lab/**"
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run replay assertions
+        run: |
+          failed=0
+          for bundle in replays/**/*.json; do
+            [ -f "$bundle" ] || continue
+            echo "--- Replaying: $bundle ---"
+            if ! uv run firmware-replay replay --bundle "$bundle"; then
+              failed=1
+            fi
+          done
+          exit $failed
+
+      - name: Upload failing bundles
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failing-replay-bundles
+          path: replays/
+          retention-days: 30

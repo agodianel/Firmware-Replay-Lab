@@ -14,7 +14,7 @@ Replay bundles must include metadata (target, firmware_version, board, commit), 
 5. Check assertions: each has a `kind` that is a recognized type.
 6. Optionally warn about empty notes or events.
 7. Add tests in `tests/test_validator.py`.
-8. Wire the validator into the CLI as `firmware-replay validate --bundle path`.
+8. Wire the validator into the CLI as `frl validate --bundle path`.
 9. Run `uv run pytest -q` and confirm all tests pass.
 
 ## Constraints

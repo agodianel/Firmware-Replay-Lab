@@ -1,0 +1,49 @@
+{
+  "metadata": {
+    "target": "stm32",
+    "firmware_version": "v2.0.0-rc1",
+    "board": "nucleo-l476rg",
+    "commit": "c3a1d09",
+    "captured_at": "2026-03-22T11:30:00+00:00",
+    "environment": {
+      "hal_version": "1.17.3",
+      "toolchain": "arm-none-eabi-gcc 13.2"
+    }
+  },
+  "serial_log": [
+    {"timestamp_ms": 0, "direction": "device->host", "message": "SystemClockConfig: SYSCLK=80000000"},
+    {"timestamp_ms": 1, "direction": "device->host", "message": "HAL_Init OK"},
+    {"timestamp_ms": 2, "direction": "device->host", "message": "GPIO init complete"},
+    {"timestamp_ms": 3, "direction": "device->host", "message": "USART2 init: baud=115200"},
+    {"timestamp_ms": 4, "direction": "device->host", "message": "I2C1 init: speed=400000"},
+    {"timestamp_ms": 5, "direction": "device->host", "message": "assert_failed: file stm32l4xx_hal_rcc.c, line 1284"},
+    {"timestamp_ms": 6, "direction": "device->host", "message": "Error_Handler called"},
+    {"timestamp_ms": 7, "direction": "device->host", "message": "System reset"},
+    {"timestamp_ms": 8, "direction": "device->host", "message": "SystemClockConfig: SYSCLK=80000000"},
+    {"timestamp_ms": 9, "direction": "device->host", "message": "HAL_Init OK"},
+    {"timestamp_ms": 10, "direction": "device->host", "message": "GPIO init complete"},
+    {"timestamp_ms": 11, "direction": "device->host", "message": "USART2 init: baud=115200"},
+    {"timestamp_ms": 12, "direction": "device->host", "message": "I2C1 init: speed=400000"},
+    {"timestamp_ms": 13, "direction": "device->host", "message": "assert_failed: file stm32l4xx_hal_rcc.c, line 1284"},
+    {"timestamp_ms": 14, "direction": "device->host", "message": "Error_Handler called"},
+    {"timestamp_ms": 15, "direction": "device->host", "message": "System reset"}
+  ],
+  "events": [
+    {"type": "assert_failed", "timestamp_ms": 5, "detail": "assert_failed: file stm32l4xx_hal_rcc.c, line 1284"},
+    {"type": "hal_error", "timestamp_ms": 6, "detail": "Error_Handler called"},
+    {"type": "assert_failed", "timestamp_ms": 13, "detail": "assert_failed: file stm32l4xx_hal_rcc.c, line 1284"},
+    {"type": "hal_error", "timestamp_ms": 14, "detail": "Error_Handler called"}
+  ],
+  "mocked_inputs": [],
+  "assertions": [
+    {"kind": "contains_text", "text": "assert_failed"},
+    {"kind": "event_count", "event_type": "assert_failed", "min_count": 2},
+    {"kind": "ordering", "sequence": ["HAL_Init", "assert_failed", "System reset", "HAL_Init", "assert_failed"]}
+  ],
+  "notes": [
+    "Boot loop caused by RCC assert in HAL clock config on L476.",
+    "Assert fires in HAL_RCC_OscConfig when PLL source is wrong after warm reset.",
+    "Device resets and hits the same assert every cycle — infinite loop.",
+    "Root cause: MSI was not re-enabled before switching PLL source after brownout."
+  ]
+}

@@ -30,7 +30,7 @@ jobs:
           for bundle in replays/**/*.json; do
             [ -f "$bundle" ] || continue
             echo "--- Replaying: $bundle ---"
-            if ! uv run firmware-replay replay --bundle "$bundle"; then
+            if ! uv run frl test --bundle "$bundle"; then
               failed=1
             fi
           done

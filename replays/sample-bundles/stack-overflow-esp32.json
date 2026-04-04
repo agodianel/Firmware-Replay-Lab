@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "target": "esp32",
+    "firmware_version": "v4.1.0",
+    "board": "esp32-s3-devkitc",
+    "commit": "e92f3b1",
+    "captured_at": "2026-03-25T14:00:00+00:00",
+    "environment": {
+      "idf_version": "5.2",
+      "toolchain": "xtensa-esp32s3-elf-gcc 12.2"
+    }
+  },
+  "serial_log": [
+    {"timestamp_ms": 100, "direction": "device->host", "message": "rst:0x1 (POWERON_RESET)"},
+    {"timestamp_ms": 120, "direction": "device->host", "message": "I (120) boot: ESP-IDF v5.2"},
+    {"timestamp_ms": 150, "direction": "device->host", "message": "I (150) cpu_start: Starting scheduler on PRO CPU"},
+    {"timestamp_ms": 200, "direction": "device->host", "message": "I (200) app: Registering GPIO ISR"},
+    {"timestamp_ms": 210, "direction": "device->host", "message": "I (210) app: ISR handler installed on GPIO 4"},
+    {"timestamp_ms": 220, "direction": "device->host", "message": "I (220) app: Starting sensor poll task (stack=2048)"},
+    {"timestamp_ms": 500, "direction": "device->host", "message": "I (500) sensor: Reading accelerometer"},
+    {"timestamp_ms": 510, "direction": "device->host", "message": "I (510) sensor: Processing FFT (1024 samples)"},
+    {"timestamp_ms": 520, "direction": "device->host", "message": "***ERROR*** A stack overflow in task sensor_poll has been detected."},
+    {"timestamp_ms": 521, "direction": "device->host", "message": "Guru Meditation Error: Core  1 panic'ed (Unhandled debug exception)."},
+    {"timestamp_ms": 522, "direction": "device->host", "message": "Debug exception reason: Stack canary watchpoint triggered (sensor_poll)"},
+    {"timestamp_ms": 523, "direction": "device->host", "message": "Core  1 register dump:"},
+    {"timestamp_ms": 524, "direction": "device->host", "message": "PC: 0x420156a4  PS: 0x00060e36  A0: 0x82015420"},
+    {"timestamp_ms": 525, "direction": "device->host", "message": "Backtrace: 0x420156a4:0x3fceb810 0x42015420:0x3fceb830 0x4200ae44:0x3fceb850"}
+  ],
+  "events": [
+    {"type": "reset", "timestamp_ms": 100, "detail": "POWERON_RESET"},
+    {"type": "panic", "timestamp_ms": 521, "detail": "Guru Meditation Error: Core  1 panic'ed (Unhandled debug exception)."},
+    {"type": "backtrace", "timestamp_ms": 525, "detail": "0x420156a4:0x3fceb810 0x42015420:0x3fceb830 0x4200ae44:0x3fceb850"},
+    {"type": "error", "timestamp_ms": 520, "detail": "Stack overflow in task sensor_poll"}
+  ],
+  "mocked_inputs": [],
+  "assertions": [
+    {"kind": "contains_text", "text": "stack overflow"},
+    {"kind": "contains_text", "text": "sensor_poll"},
+    {"kind": "regex_match", "pattern": "stack=\\d+"},
+    {"kind": "ordering", "sequence": ["FFT", "stack overflow", "Guru Meditation"]}
+  ],
+  "notes": [
+    "Stack overflow in sensor_poll task during FFT computation.",
+    "Task stack set to 2048 bytes, but 1024-sample FFT needs ~6KB on stack.",
+    "Only triggered when ISR fires during FFT (nested context uses extra stack).",
+    "Fix: increase sensor_poll stack to 8192 or move FFT buffer to heap."
+  ]
+}

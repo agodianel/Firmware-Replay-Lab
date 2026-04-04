@@ -48,5 +48,5 @@ jobs:
       - name: Validate sample bundles
         run: |
           for bundle in replays/sample-bundles/*.json; do
-            [ -f "$bundle" ] && uv run firmware-replay replay --bundle "$bundle" || true
+            [ -f "$bundle" ] && uv run frl test --bundle "$bundle" || true
           done

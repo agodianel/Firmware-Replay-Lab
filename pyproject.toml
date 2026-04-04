@@ -12,7 +12,13 @@ authors = [{ name = "Firmware Replay Lab" }]
 dependencies = []
 
 [project.scripts]
-firmware-replay = "firmware_replay_lab.cli:main"
+frl = "firmware_replay_lab.cli:main"
+
+[project.entry-points."pytest11"]
+firmware_replay = "firmware_replay_lab.pytest_plugin"
+
+[project.optional-dependencies]
+ui = ["dash>=2.14"]
 
 [dependency-groups]
 dev = [
@@ -21,5 +27,5 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests/unit", "tests/integration"]
 pythonpath = ["src"]

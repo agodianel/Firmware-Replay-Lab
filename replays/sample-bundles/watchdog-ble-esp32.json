@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "target": "esp32",
+    "firmware_version": "v1.8.3",
+    "board": "esp32-wrover-kit",
+    "commit": "b7d9e2a",
+    "captured_at": "2026-03-20T16:12:00+00:00",
+    "environment": {
+      "idf_version": "5.1.2",
+      "toolchain": "xtensa-esp32-elf-gcc 12.2"
+    }
+  },
+  "serial_log": [
+    {"timestamp_ms": 120, "direction": "device->host", "message": "I (120) boot: ESP-IDF v5.1.2"},
+    {"timestamp_ms": 145, "direction": "device->host", "message": "I (145) cpu_start: Starting scheduler on PRO CPU"},
+    {"timestamp_ms": 300, "direction": "device->host", "message": "I (300) BLE: Initializing NimBLE host"},
+    {"timestamp_ms": 450, "direction": "device->host", "message": "I (450) BLE: GAP service registered"},
+    {"timestamp_ms": 600, "direction": "device->host", "message": "I (600) BLE: Starting advertising"},
+    {"timestamp_ms": 1200, "direction": "device->host", "message": "I (1200) BLE: Connection established, handle=1"},
+    {"timestamp_ms": 1500, "direction": "device->host", "message": "I (1500) BLE: GATT notify started, interval=100ms"},
+    {"timestamp_ms": 3500, "direction": "device->host", "message": "W (3500) BLE: TX queue full, dropping notification"},
+    {"timestamp_ms": 4000, "direction": "device->host", "message": "W (4000) BLE: TX queue full, dropping notification"},
+    {"timestamp_ms": 4500, "direction": "device->host", "message": "E (4500) BLE: Notification backpressure critical"},
+    {"timestamp_ms": 5000, "direction": "device->host", "message": "E (5000) task_wdt: Task watchdog got triggered. The following tasks did not reset the watchdog in time:"},
+    {"timestamp_ms": 5001, "direction": "device->host", "message": "E (5001) task_wdt:  - nimble_host (CPU 0)"},
+    {"timestamp_ms": 5002, "direction": "device->host", "message": "E (5002) task_wdt: Tasks currently running: IDLE0"},
+    {"timestamp_ms": 5003, "direction": "device->host", "message": "abort() was called at PC 0x400d7890"},
+    {"timestamp_ms": 5004, "direction": "device->host", "message": "Backtrace: 0x40082a34:0x3ffb5e90 0x40082c65:0x3ffb5eb0 0x400d7890:0x3ffb5ed0"}
+  ],
+  "events": [
+    {"type": "reset", "timestamp_ms": 120, "detail": "boot"},
+    {"type": "watchdog", "timestamp_ms": 5000, "detail": "Task watchdog got triggered"},
+    {"type": "panic", "timestamp_ms": 5003, "detail": "abort() was called at PC 0x400d7890"},
+    {"type": "backtrace", "timestamp_ms": 5004, "detail": "0x40082a34:0x3ffb5e90 0x40082c65:0x3ffb5eb0 0x400d7890:0x3ffb5ed0"}
+  ],
+  "mocked_inputs": [],
+  "assertions": [
+    {"kind": "contains_text", "text": "Task watchdog got triggered"},
+    {"kind": "contains_text", "text": "nimble_host"},
+    {"kind": "timing_window", "event_type": "watchdog", "after_ms": 4000, "before_ms": 6000}
+  ],
+  "notes": [
+    "BLE notification backpressure causes nimble_host task to starve watchdog.",
+    "TX queue fills when remote device does not consume notifications fast enough.",
+    "Watchdog fires ~5s after notification backpressure begins.",
+    "Workaround: increase task watchdog timeout or add flow control on GATT notify."
+  ]
+}

@@ -21,11 +21,33 @@ uv sync
 
 If your change fixes a firmware bug captured from hardware:
 
-1. Create a bundle: `uv run firmware-replay init-bundle --output replays/{name}/bundle.json --target {target} --firmware-version {version} --board {board} --commit {commit}`
-2. Add the serial log: `uv run firmware-replay add-log --bundle replays/{name}/bundle.json --log-file {log-file}`
-3. Add assertions: `uv run firmware-replay add-assertion --bundle replays/{name}/bundle.json --kind contains_text --text "{expected-text}"`
-4. Verify: `uv run firmware-replay replay --bundle replays/{name}/bundle.json`
+1. Capture a bundle: `uv run frl capture -o replays/{name}/bundle.json -t {target} -fw {version} -b {board} -c {commit} -l {log-file}`
+2. Pack more data: `uv run frl pack --bundle replays/{name}/bundle.json --assertion-text "{expected-text}" --note "description"`
+3. Inspect: `uv run frl inspect --bundle replays/{name}/bundle.json`
+4. Test: `uv run frl test --bundle replays/{name}/bundle.json`
 5. Commit the bundle with your PR.
+
+## Contributing a community bundle
+
+Community bundles help build a shared dataset of real firmware failures. To contribute:
+
+1. Capture the failure as a replay bundle (see above).
+2. **Anonymize**: `uv run frl anonymize --bundle bundle.json -o bundle-clean.json`
+3. **Validate**: `uv run frl validate --bundle bundle-clean.json`
+4. **Test assertions**: `uv run frl test --bundle bundle-clean.json`
+5. Review the output and confirm no secrets, proprietary symbols, or internal addresses remain.
+6. Open a PR adding the bundle to `replays/community/` or use the **Community Bundle Submission** issue template.
+
+### Anonymization checklist
+
+- [ ] No API keys, tokens, or passwords
+- [ ] No internal IP addresses or hostnames
+- [ ] No proprietary function or variable names
+- [ ] No personal email addresses
+- [ ] No absolute file paths from your machine
+- [ ] You have permission to share this debug artifact
+
+The `frl anonymize` command automatically redacts common patterns (IPs, MACs, emails, tokens, paths), but always review the output manually.
 
 ## Adding a platform adapter
 

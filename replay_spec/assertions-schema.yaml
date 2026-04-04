@@ -1,0 +1,44 @@
+# Assertions Schema
+# Defines all supported assertion kinds and their parameters.
+
+assertions:
+  version: "1.0"
+
+  kinds:
+    contains_text:
+      description: "Check that the serial log contains a specific text substring"
+      parameters:
+        required:
+          - text        # string: substring to search for across all serial log messages
+      evaluation: "Pass if any serial_log entry's message contains the text"
+
+    event_count:
+      description: "Check that a minimum number of events of a given type exist"
+      parameters:
+        required:
+          - event_type  # string: the event type field to match
+        optional:
+          - min_count   # integer >= 1, default 1
+      evaluation: "Pass if count of events with matching type >= min_count"
+
+  # Future assertion kinds (not yet implemented):
+  #
+  # regex_match:
+  #   description: "Check serial log against a regex pattern"
+  #   parameters:
+  #     required:
+  #       - pattern     # string: Python-compatible regex
+  #
+  # timing_window:
+  #   description: "Check that an event occurs within a time window"
+  #   parameters:
+  #     required:
+  #       - event_type
+  #       - after_ms    # integer: earliest allowed timestamp
+  #       - before_ms   # integer: latest allowed timestamp
+  #
+  # ordering:
+  #   description: "Check that events or log lines appear in a specific order"
+  #   parameters:
+  #     required:
+  #       - sequence    # list of strings: ordered text or event types

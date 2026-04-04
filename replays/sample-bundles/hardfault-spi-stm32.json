@@ -1,0 +1,52 @@
+{
+  "metadata": {
+    "target": "stm32",
+    "firmware_version": "v3.2.1",
+    "board": "nucleo-f446re",
+    "commit": "f4e6a8c",
+    "captured_at": "2026-03-15T09:45:00+00:00",
+    "environment": {
+      "hal_version": "1.27.1",
+      "toolchain": "arm-none-eabi-gcc 12.3",
+      "ide": "STM32CubeIDE 1.14"
+    }
+  },
+  "serial_log": [
+    {"timestamp_ms": 0, "direction": "device->host", "message": "SystemClockConfig: SYSCLK=168000000"},
+    {"timestamp_ms": 1, "direction": "device->host", "message": "HAL_Init OK"},
+    {"timestamp_ms": 2, "direction": "device->host", "message": "SPI1 init: mode=0, prescaler=4"},
+    {"timestamp_ms": 3, "direction": "device->host", "message": "SPI1 DMA configured: TX=DMA2_Stream3 RX=DMA2_Stream0"},
+    {"timestamp_ms": 4, "direction": "device->host", "message": "Flash sensor detected: ID=0xEF4018"},
+    {"timestamp_ms": 5, "direction": "device->host", "message": "Starting bulk read: addr=0x000000 len=4096"},
+    {"timestamp_ms": 6, "direction": "device->host", "message": "SPI1 DMA transfer started"},
+    {"timestamp_ms": 7, "direction": "device->host", "message": "HardFault Handler entered"},
+    {"timestamp_ms": 8, "direction": "device->host", "message": "R0: 0x20004800"},
+    {"timestamp_ms": 9, "direction": "device->host", "message": "R1: 0x00001000"},
+    {"timestamp_ms": 10, "direction": "device->host", "message": "R2: 0x00000000"},
+    {"timestamp_ms": 11, "direction": "device->host", "message": "LR: 0x08003A5C"},
+    {"timestamp_ms": 12, "direction": "device->host", "message": "PC: 0x080045F8"},
+    {"timestamp_ms": 13, "direction": "device->host", "message": "xPSR: 0x61000000"},
+    {"timestamp_ms": 14, "direction": "device->host", "message": "CFSR: 0x00008200 (PRECISERR, BFARVALID)"},
+    {"timestamp_ms": 15, "direction": "device->host", "message": "BFAR: 0x40013C0C"},
+    {"timestamp_ms": 16, "direction": "device->host", "message": "System reset"}
+  ],
+  "events": [
+    {"type": "hardfault", "timestamp_ms": 7, "detail": "HardFault Handler entered"},
+    {"type": "register_dump", "timestamp_ms": 8, "detail": "R0=0x20004800"},
+    {"type": "register_dump", "timestamp_ms": 11, "detail": "LR=0x08003A5C"},
+    {"type": "register_dump", "timestamp_ms": 12, "detail": "PC=0x080045F8"}
+  ],
+  "mocked_inputs": [],
+  "assertions": [
+    {"kind": "contains_text", "text": "HardFault"},
+    {"kind": "contains_text", "text": "PRECISERR"},
+    {"kind": "event_count", "event_type": "register_dump", "min_count": 3},
+    {"kind": "ordering", "sequence": ["SPI1 DMA transfer", "HardFault", "System reset"]}
+  ],
+  "notes": [
+    "HardFault occurs during SPI DMA bulk read from external flash.",
+    "BFAR points to SPI1 data register — likely invalid DMA buffer alignment.",
+    "Occurs intermittently under heavy task load, reproducible ~30% of runs.",
+    "Suspect DMA buffer crosses MPU boundary or is in non-accessible region."
+  ]
+}

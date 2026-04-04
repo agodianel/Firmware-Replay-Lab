@@ -1,0 +1,61 @@
+# Replay Bundle Schema
+# Defines the structure of a valid replay bundle.
+# All bundles must conform to this schema.
+
+bundle:
+  version: "1.0"
+
+  metadata:
+    required:
+      - target          # string: platform identifier (e.g. "esp32", "stm32")
+      - firmware_version # string: firmware version tag or identifier
+      - board           # string: board identifier (e.g. "devkitc", "nucleo-f446re")
+      - commit          # string: VCS commit hash
+    optional:
+      - captured_at     # string: ISO 8601 timestamp of capture
+      - environment     # object: key-value pairs for toolchain, SDK version, etc.
+
+  serial_log:
+    description: "Timestamped serial lines captured from the device"
+    items:
+      required:
+        - timestamp_ms  # integer >= 0: milliseconds since capture start
+        - direction     # string: "device->host" or "host->device"
+        - message       # string: raw line content
+
+  events:
+    description: "Typed structured events extracted from logs or probes"
+    items:
+      required:
+        - type          # string: event type identifier
+        - timestamp_ms  # integer >= 0
+      optional:
+        - detail        # string: human-readable detail
+
+  mocked_inputs:
+    description: "Optional mocked sensor, network, or peripheral inputs for replay"
+    items:
+      required:
+        - type          # string: input type (e.g. "sensor", "mqtt", "gpio")
+      optional:
+        - timestamp_ms  # integer >= 0
+        - data          # any: payload
+
+  assertions:
+    description: "Expected outcomes for replay validation"
+    items:
+      required:
+        - kind          # string: assertion type
+      kinds:
+        contains_text:
+          required:
+            - text      # string: text to search for in serial log
+        event_count:
+          required:
+            - event_type # string: event type to count
+          optional:
+            - min_count  # integer >= 1, default 1
+
+  notes:
+    description: "Short context strings for human and agent readers"
+    items: string
